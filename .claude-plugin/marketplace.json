@@ -13,7 +13,7 @@
     {
       "name": "code-pet",
       "source": "./mods/code-pet",
-      "description": "A pixel pet in the side panel that eats passing tests, cheers commits, sulks at failures and evolves from egg to adult as you code."
+      "description": "A pixel pet in the side panel — a blob, corgi, shiba, cat or bunny in several coats, with your name for it — that eats passing tests, cheers commits, sulks at failures and grows up as you code."
     },
     {
       "name": "boss-fight",
@@ -44,6 +44,46 @@
       "name": "branch-warden",
       "source": "./mods/branch-warden",
       "description": "Keeps Claude off main: asks or blocks before the first edit and every commit on a protected branch, suggests a branch, and shows it in the status line."
+    },
+    {
+      "name": "ink-paper",
+      "source": "./mods/ink-paper",
+      "description": "INK & PAPER 水墨书斋: a rice-paper look by day and lamp-lit ink by night, an ink-wash landscape backdrop, sealed messages, and the solar term and double hour in the status line."
+    },
+    {
+      "name": "seasons",
+      "source": "./mods/seasons",
+      "description": "SEASONS 四时: a look that changes by itself with the real season and time of day: cherry petals, fireflies, maple leaves or snow, each with its own palette in light and dark."
+    },
+    {
+      "name": "token-garden",
+      "source": "./mods/token-garden",
+      "description": "A garden for the context window: each turn grows a plant by what it did, and the garden dries and wilts as the context fills, with a nudge to /compact before it's full."
+    },
+    {
+      "name": "pomodoro-pilot",
+      "source": "./mods/pomodoro-pilot",
+      "description": "Pomodoro timer for Claude Code: a countdown in the status line, toasts when focus and breaks end, quiet reminders during a break, and done-toasts held until the break is over."
+    },
+    {
+      "name": "secret-sniffer",
+      "source": "./mods/secret-sniffer",
+      "description": "Stops secrets before they land: scans what Claude writes into files and what a git commit stages for API keys, tokens, private keys and JWTs, and refuses the call with the value masked."
+    },
+    {
+      "name": "focus-lens",
+      "source": "./mods/focus-lens",
+      "description": "Set a goal for the session with /lens: it sits in the status line, Claude is told to stay within it, and a gentle toast says when a turn's edits seem to wander outside it."
+    },
+    {
+      "name": "standup-scribe",
+      "source": "./mods/standup-scribe",
+      "description": "Keeps a daily log of commits, PRs, edited files, test runs and prompts per repository, and turns it into a yesterday / today / blockers standup with /scribe or the standup_log tool."
+    },
+    {
+      "name": "narrator",
+      "source": "./mods/narrator",
+      "description": "Narrates what Claude is doing in a literary voice (wuxia, detective, space opera or nature documentary): a line in the status bar for every tool call, and a toast at the moments that matter."
     }
   ]
 }

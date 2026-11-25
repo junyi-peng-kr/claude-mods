@@ -1,0 +1,7 @@
+{
+  "name": "focus-lens",
+  "version": "0.1.0",
+  "description": "Set a goal for the session with /lens: it sits in the status line, Claude is told to stay within it, and a gentle toast says when a turn's edits seem to wander outside it.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

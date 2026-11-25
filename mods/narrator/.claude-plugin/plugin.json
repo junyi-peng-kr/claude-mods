@@ -1,0 +1,7 @@
+{
+  "name": "narrator",
+  "version": "0.1.0",
+  "description": "Narrates what Claude is doing in a literary voice (wuxia, detective, space opera or nature documentary): a line in the status bar for every tool call, and a toast at the moments that matter.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

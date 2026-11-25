@@ -1,0 +1,7 @@
+{
+  "name": "seasons",
+  "version": "0.1.0",
+  "description": "SEASONS 四时: a look that changes by itself with the real season and time of day: cherry petals, fireflies, maple leaves or snow, each with its own palette in light and dark.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

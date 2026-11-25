@@ -3,12 +3,15 @@
 //  - Food and joy fall slowly over time; it never dies, it only sulks.
 //  - XP grows it: egg → baby → kid → adult. A new coding day adds a streak bonus.
 //  - Kept in $.store, so the same pet greets you in every session.
-//  - /pet [show | pat | name <name> | stats | on | off | demo]
+//  - Kinds: the blob (bit), corgi, shiba, cat and bunny, each in a few coats; pick
+//    them in the panel, with /pet adopt, or in the plugin's settings.
+//  - /pet [show | pat | adopt <kind> [coat] [name] | coat <coat> | kinds | name <name> | stats | on | off | demo]
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register } from 'claude-code'
+import type { EngineInterface, PluginOptions, Register } from 'claude-code'
 
-import type { Pet, Reaction, ReactionKind } from '../types'
+import type { Pet, Reaction, ReactionKind, Species } from '../types'
 import { MOOD_ZH, STAGE_ZH, bar, moodOf, nextStage, petSvg, petText, stageOf } from './art'
+import { KINDS, SPECIES, coatOf, isSpecies } from './species'
 
 const STORE_PET = 'code-pet.pet'
 const STORE_ON = 'code-pet.isOn'
@@ -18,6 +21,8 @@ const PAT_GAP_MS = 10 * 60 * 1000
 
 const newPet = (now: number): Pet => ({
   name: '小比特',
+  species: 'bit',
+  coat: 'classic',
   born: now,
   xp: 0,
   food: 70,
@@ -31,7 +36,7 @@ const newPet = (now: number): Pet => ({
   stumbles: 0,
 })
 
-const petAtom = atom({ plugin: 'code-pet', key: 'pet' } as const, newPet(0), { shape: 'pet-1' })
+const petAtom = atom({ plugin: 'code-pet', key: 'pet' } as const, newPet(0), { shape: 'pet-2' })
 const reactionAtom = atom({ plugin: 'code-pet', key: 'reaction' } as const, null, { shape: 'reaction-1' })
 const isOnAtom = atom({ plugin: 'code-pet', key: 'isOn' } as const, true)
 
@@ -104,10 +109,42 @@ async function mutate(
 
 const active = (pet: Pet): Pet => ({ ...pet, lastActive: Date.now() })
 
+/** What the plugin's settings pin, if anything: they win over the panel's choice. */
+export type Pinned = { species?: Species; coat?: string; name?: string }
+
+export function pinnedOf(options: PluginOptions | undefined): Pinned {
+  const species = options?.species
+  const coat = options?.coat
+  const name = typeof options?.name === 'string' ? options.name.trim().slice(0, 16) : ''
+  return {
+    ...(isSpecies(species) ? { species } : {}),
+    ...(typeof coat === 'string' && coat !== 'picked' ? { coat } : {}),
+    ...(name ? { name } : {}),
+  }
+}
+
+/** Applies a kind, coat and name, keeping the pet's age, XP and history. */
+export function dress(pet: Pet, species: Species, coat?: string, name?: string): Pet {
+  const isSameKind = pet.species === species
+  const wasDefaultName = pet.name === KINDS[pet.species]?.defaultName
+  return {
+    ...pet,
+    species,
+    coat: coatOf(species, coat ?? (isSameKind ? pet.coat : undefined)).key,
+    name: name ?? (wasDefaultName ? KINDS[species].defaultName : pet.name),
+  }
+}
+
+let pinned: Pinned = {}
+
 async function load($: EngineInterface) {
   const now = Date.now()
   const stored = (await $.store.get(STORE_PET)) as Partial<Pet> | undefined
   let pet = decay({ ...newPet(now), ...(stored ?? {}) }, now)
+  if (!isSpecies(pet.species)) pet = { ...pet, species: 'bit', coat: 'classic' }
+  if (pinned.species || pinned.coat || pinned.name) {
+    pet = dress(pet, pinned.species ?? pet.species, pinned.coat ?? (pinned.species ? undefined : pet.coat), pinned.name)
+  }
   const today = dayOf(now)
   let isNewDay = false
   if (!pet.days.includes(today)) {
@@ -125,6 +162,30 @@ function ageText(pet: Pet, now: number): string {
   return days < 1 ? '今天出生' : `${days} 天大`
 }
 
+function kindLine(pet: Pet): string {
+  const kind = KINDS[pet.species]
+  const { coat } = coatOf(pet.species, pet.coat)
+  return pet.species === 'bit' ? kind.zh : `${coat.zh}${kind.zh}`
+}
+
+async function adopt($: EngineInterface, species: Species, coat?: string, name?: string): Promise<string> {
+  const before = await read($, petAtom)
+  await mutate($, p => dress(p, species, coat, name), { kind: 'happy', text: '' })
+  const after = await read($, petAtom)
+  await update($, reactionAtom, r => (r ? { ...r, text: `${after.name}：我现在是一只${kindLine(after)}啦！` } : r))
+  await $.ui.open({ id: PANE, title: `${after.name} · 代码宠物` })
+  const lock = pinned.species || pinned.coat || pinned.name ? '（注意：插件设置里固定了外观或名字，下次开会话会按设置来。）' : ''
+  return `${before.name} 变成了${kindLine(after)}「${after.name}」，XP 和成长都保留着。${lock}`
+}
+
+function kindsText(): string {
+  return [
+    '可选的宠物和毛色：',
+    ...SPECIES.map(sp => `  ${sp} · ${KINDS[sp].zh}：${Object.entries(KINDS[sp].coats).map(([k, c]) => `${k}（${c.zh}）`).join('、')}`),
+    '例：/pet adopt corgi tricolor Ace',
+  ].join('\n')
+}
+
 async function pat($: EngineInterface): Promise<string> {
   const pet = await read($, petAtom)
   const now = Date.now()
@@ -139,19 +200,21 @@ async function pat($: EngineInterface): Promise<string> {
   return `你摸了摸 ${pet.name}，心情 +8。`
 }
 
-export const register: Register = on => {
+export const register: Register = (on, options) => {
+  pinned = pinnedOf(options)
+
   on('session.start', async ($, e, next) => {
     const isOn = (await $.store.get(STORE_ON)) !== false
     await update($, isOnAtom, () => isOn)
     await $.command.register({
       name: 'pet',
-      description: 'Your code pet: /pet show | pat | name <name> | stats | on | off | demo',
-      argumentHint: 'show | pat | name <name> | stats | on | off | demo',
+      description: 'Your code pet: /pet show | pat | adopt <kind> [coat] [name] | coat <coat> | kinds | name <name> | stats | on | off | demo',
+      argumentHint: 'show | pat | adopt <kind> [coat] [name] | coat <coat> | kinds | name <name> | stats | on | off | demo',
     })
     const { pet, isNew, isNewDay, streak } = await load($)
     if (isOn) {
       void $.ui.open({ id: PANE, title: `${pet.name} · 代码宠物` })
-      if (isNew) await react($, 'happy', `🥚 你领养了一颗蛋！跑通测试来喂它，提交代码让它开心。`, true)
+      if (isNew) await react($, 'happy', `🥚 你领养了一颗${kindLine(pet)}蛋！面板里可以选宠物、毛色和名字。跑通测试喂它，提交代码让它开心。`, true)
       else if (isNewDay) await react($, 'happy', `${pet.name}：又见面啦！连续打卡 ${streak} 天`, true)
     }
     // Decay and the sleepy look move on their own: redraw once a minute.
@@ -181,6 +244,21 @@ export const register: Register = on => {
         return { text: `${pet.name} 回来了！` }
       case 'pat':
         return { text: await pat($) }
+      case 'kinds':
+        return { text: kindsText() }
+      case 'adopt': {
+        const [kind = '', coat, ...nameParts] = rest
+        if (!isSpecies(kind)) return { text: `用法：/pet adopt <宠物> [毛色] [名字]\n${kindsText()}` }
+        const hasCoat = coat !== undefined && coat in KINDS[kind].coats
+        const name = (hasCoat ? nameParts : [coat ?? '', ...nameParts]).join(' ').trim().slice(0, 16)
+        return { text: await adopt($, kind, hasCoat ? coat : undefined, name || undefined) }
+      }
+      case 'coat': {
+        if (!arg || !(arg in KINDS[pet.species].coats)) {
+          return { text: `${KINDS[pet.species].zh}的毛色有：${Object.entries(KINDS[pet.species].coats).map(([k, c]) => `${k}（${c.zh}）`).join('、')}` }
+        }
+        return { text: await adopt($, pet.species, arg) }
+      }
       case 'name': {
         const name = arg.slice(0, 16)
         if (!name) return { text: '用法：/pet name <名字>（最多 16 个字）' }
@@ -272,7 +350,8 @@ export const register: Register = on => {
     const nx = nextStage(pet.xp)
     const streak = streakOf(pet.days, now)
     const els = $.ui.resolve(e)
-    const { Box, Text, Button } = els
+    const { Box, Text, Button, Select, Input } = els
+    const coats = KINDS[pet.species].coats
     const say = reaction?.text ?? `${MOOD_ZH[mood]}${mood === 'hungry' ? '，想吃测试通过的果子' : mood === 'sleepy' ? '，好久没写代码了' : ''}`
     const xpLine = nx
       ? `XP ${Math.round(pet.xp)} / ${nx.need} → ${STAGE_ZH[nx.stage]}`
@@ -297,7 +376,7 @@ export const register: Register = on => {
         {art}
         <Box flexDirection="column">
           <Text bold>
-            {pet.name} · {STAGE_ZH[stage]} · {ageText(pet, now)}
+            {pet.name} · {kindLine(pet)} · {STAGE_ZH[stage]} · {ageText(pet, now)}
             {streak > 1 ? ` · 🔥${streak} 天` : ''}
           </Text>
           <Text dimColor>「{say}」</Text>
@@ -314,6 +393,32 @@ export const register: Register = on => {
         <Text dimColor>
           🍎 {pet.meals} · 🎉 {pet.commits} · 🩹 {pet.stumbles}
         </Text>
+        <Box flexDirection="column" gap={1}>
+          <Text bold>外观 · 名字</Text>
+          <Select
+            key="species"
+            label="宠物"
+            value={pet.species}
+            options={SPECIES.map(sp => ({ value: sp, label: KINDS[sp].zh }))}
+            onSelect={value => (isSpecies(value) ? adopt($, value) : undefined)}
+          />
+          {Object.keys(coats).length > 1 && (
+            <Select
+              key="coat"
+              label="毛色"
+              value={coatOf(pet.species, pet.coat).key}
+              options={Object.entries(coats).map(([k, c]) => ({ value: k, label: c.zh }))}
+              onSelect={value => adopt($, pet.species, value)}
+            />
+          )}
+          <Input
+            key="name"
+            label="名字"
+            placeholder={pet.name}
+            submitLabel="改名"
+            onSubmit={value => (value.trim() ? adopt($, pet.species, undefined, value.trim().slice(0, 16)) : undefined)}
+          />
+        </Box>
       </Box>
     )
   })

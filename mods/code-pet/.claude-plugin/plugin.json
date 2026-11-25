@@ -1,7 +1,50 @@
 {
   "name": "code-pet",
-  "version": "0.1.0",
-  "description": "A pixel pet in the side panel that eats passing tests, cheers commits, sulks at failures and evolves as you code. It is kept across sessions.",
+  "version": "0.2.0",
+  "description": "A pixel pet in the side panel: a blob, corgi, shiba, cat or bunny in several coats, named by you. It eats passing tests, cheers commits, sulks at failures and grows up as you code; kept across sessions.",
   "license": "MIT",
-  "types": "./types/index.d.ts"
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "species": {
+      "type": "string",
+      "title": "Pet kind",
+      "description": "bit (the colour-changing blob), corgi, shiba, cat or bunny. \"picked\" keeps what you chose in the pet's panel or with /pet adopt.",
+      "options": [
+        "picked",
+        "bit",
+        "corgi",
+        "shiba",
+        "cat",
+        "bunny"
+      ],
+      "default": "picked"
+    },
+    "coat": {
+      "type": "string",
+      "title": "Coat",
+      "description": "corgi: tricolor, red, sable · shiba: red, black-tan, cream · cat: orange, black, gray, calico · bunny: white, brown, gray. A coat the kind doesn't have falls back to its first. \"picked\" keeps your choice in the panel.",
+      "options": [
+        "picked",
+        "tricolor",
+        "red",
+        "sable",
+        "black-tan",
+        "cream",
+        "orange",
+        "black",
+        "gray",
+        "calico",
+        "white",
+        "brown",
+        "classic"
+      ],
+      "default": "picked"
+    },
+    "name": {
+      "type": "string",
+      "title": "Pet name",
+      "description": "Up to 16 characters. Empty keeps the name you gave it in the panel or with /pet name.",
+      "default": ""
+    }
+  }
 }

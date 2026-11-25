@@ -1,7 +1,13 @@
 export type Stage = 'egg' | 'baby' | 'kid' | 'adult'
 
+/** `bit` is the original blob that changes colour as it grows. */
+export type Species = 'bit' | 'corgi' | 'shiba' | 'cat' | 'bunny'
+
 export type Pet = {
   name: string
+  species: Species
+  /** A key of the species' coats (corgi: tricolor, red, sable; …). */
+  coat: string
   /** Epoch ms the egg was laid. */
   born: number
   xp: number

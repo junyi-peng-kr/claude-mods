@@ -1,0 +1,7 @@
+{
+  "name": "ink-paper",
+  "version": "0.1.0",
+  "description": "INK & PAPER 水墨书斋: a rice-paper look by day and lamp-lit ink by night, an ink-wash landscape backdrop, sealed messages, and the solar term and double hour in the status line.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

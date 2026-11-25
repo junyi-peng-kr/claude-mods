@@ -1,0 +1,7 @@
+{
+  "name": "secret-sniffer",
+  "version": "0.1.0",
+  "description": "Stops secrets before they land: scans what Claude writes into files and what a git commit stages for API keys, tokens, private keys and JWTs, and refuses the call with the value masked.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

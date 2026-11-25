@@ -1,6 +1,6 @@
 # CODE PET
 
-A pixel pet that lives in Claude Code's side panel and grows with your coding.
+A pixel pet that lives in Claude Code's side panel and grows with your coding: a blob, a corgi, a shiba, a cat or a bunny, in the coat and with the name you choose.
 
 ## How it lives
 
@@ -12,10 +12,30 @@ A pixel pet that lives in Claude Code's side panel and grows with your coding.
 
 The pet never dies. Left alone, it only gets hungry and sad until you come back. It is saved in the mod's store, so the same pet greets you in every session and every project.
 
+## Kinds, coats and names
+
+| Kind | Coats |
+| --- | --- |
+| `bit` 小比特 (the original blob) | changes colour as it grows |
+| `corgi` 柯基 | `tricolor` 三色, `red` 黄白, `sable` 貂色 |
+| `shiba` 柴犬 | `red` 赤色, `black-tan` 黑色, `cream` 白色 |
+| `cat` 猫 | `orange` 橘猫, `black` 黑猫, `gray` 狸花, `calico` 三花 |
+| `bunny` 兔子 | `white` 白兔, `brown` 棕兔, `gray` 灰兔 |
+
+An animal hatches from an egg in its coat's colours. It grows bigger as a baby and a kid, gets a red collar as a kid, and gets a gold tag as an adult.
+
+There are three ways to choose:
+
+- **In the panel**: the 外观 · 名字 section has pickers for the kind and the coat, and a name box.
+- **With a command**: `/pet adopt corgi tricolor Ace` changes the kind, coat and name in one go. Your pet keeps its age, XP and history.
+- **In the plugin's settings** (`species`, `coat`, `name`): set them to pin the pet's look and name in every session, for example when you share a setup with your team. `picked` and an empty name leave the choice to the panel and the commands.
+
 ## Commands
 
 - `/pet` opens the panel.
 - `/pet pat` pats it. The panel also has a **摸摸它** button (hotkey `p`).
+- `/pet adopt <kind> [coat] [name]` changes its kind, coat and name, and `/pet kinds` lists them all.
+- `/pet coat <coat>` changes only the coat.
 - `/pet name <name>` renames it.
 - `/pet stats` prints its age, XP, streak and lifetime counts.
 - `/pet demo` plays its four reactions in a row.

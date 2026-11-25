@@ -1,0 +1,7 @@
+{
+  "name": "pomodoro-pilot",
+  "version": "0.1.0",
+  "description": "Pomodoro timer for Claude Code: a countdown in the status line, toasts when focus and breaks end, quiet reminders during a break, and done-toasts held until the break is over.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}
