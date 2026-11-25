@@ -5,13 +5,15 @@
 //    stage + LINK bar, telemetry and usage. No band above the prompt: while the
 //    look is on, usage-band's row there is hidden too.
 //  - Mission alerts: ALL GREEN, LAUNCH, MISSION CLEAR, SYSTEM CHECK (before git push).
+//  - With boss-fight installed: ENEMY CONTACT and TARGET DOWN alerts, and a lock-on
+//    card with the enemy's HP while a fight runs (boss-fight draws KX-07 fighting it).
 //  - /neon on | off | demo | panel
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, ThemeMessageRule, ThemeSetArgs } from 'claude-code'
 
-import type { Flash, FlashKind, Hud } from '../types'
+import type { Combat, Flash, FlashKind, Hud } from '../types'
 import { IMG } from './art'
-import { C, FLASH, STAGE_ZH, barText, clip, cockpitSvg, dashHeight, stageColor, stageOf } from './hud'
+import { C, FLASH, STAGE_ZH, barText, clip, cockpitSvg, dashHeight, isEngaged, stageColor, stageOf } from './hud'
 import { makeColors } from './make-colors.js'
 import { SCENE } from './scene'
 
@@ -150,6 +152,36 @@ let testsPassedAt = 0
 let lintRanAt = 0
 let flashSeq = 0
 let tick = 0
+/** The last boss-fight change this copy has seen; -1 until the first read. */
+let combatSeq = -1
+
+const combatRef = { plugin: 'boss-fight', key: 'combat' } as const
+
+async function readCombat($: EngineInterface): Promise<Combat | null> {
+  try {
+    return (await $.state.get(combatRef)).value ?? null
+  } catch {
+    return null
+  }
+}
+
+/** Flashes boss-fight's contacts and kills once each. boss-fight toasts them itself. */
+async function watchCombat($: EngineInterface) {
+  const c = await readCombat($)
+  if (!c) {
+    if (combatSeq < 0) combatSeq = 0
+    return
+  }
+  const isFirstRead = combatSeq < 0
+  const isNew = c.seq > combatSeq
+  combatSeq = Math.max(combatSeq, c.seq)
+  if (isFirstRead || !isNew) return
+  if (c.event === 'spawn') {
+    await flash($, 'contact', `${c.kind}「${clip(c.name, 18)}」· HP ${c.hp}`, `BOSS-FIGHT · ${c.tier.toUpperCase()}`, false)
+  } else if (c.event === 'win') {
+    await flash($, 'down', `${c.kind}「${clip(c.name, 18)}」· ${c.rounds} 回合`, 'BOSS-FIGHT · CLEAR', false)
+  }
+}
 
 async function git($: EngineInterface, args: string[]): Promise<string | undefined> {
   try {
@@ -208,13 +240,13 @@ async function refresh($: EngineInterface, isFull: boolean) {
   })
 }
 
-async function flash($: EngineInterface, kind: FlashKind, sub: string, detail: string) {
+async function flash($: EngineInterface, kind: FlashKind, sub: string, detail: string, isToast = true) {
   if (!(await read($, isOnAtom))) return
   const f = FLASH[kind]
   const id = ++flashSeq
   const next: Flash = { kind, sub, detail, id }
   await update($, flashAtom, () => next)
-  $.ui.toast(`${f.title} · ${f.zh} — ${sub}`, { timeoutMs: FLASH_MS })
+  if (isToast) $.ui.toast(`${f.title} · ${f.zh} — ${sub}`, { timeoutMs: FLASH_MS })
   $.clock.after(FLASH_MS, () => {
     void update($, flashAtom, cur => (cur && cur.id === id ? null : cur))
   })
@@ -249,8 +281,10 @@ export const register: Register = on => {
       void $.ui.open({ id: PANE, title: PANE_TITLE })
     }
     await refresh($, true)
+    await watchCombat($)
     $.clock.every(5000, () => {
       void refresh($, false)
+      void watchCombat($)
     })
     return next(e)
   })
@@ -277,13 +311,15 @@ export const register: Register = on => {
         ['launch', 'PR 已推送', 'git push origin HEAD'],
         ['green', '48 / 48 测试通过', 'npm test · 2.1 s'],
         ['clear', '长任务完成，用时 4:12', '17 files · 12 tool calls'],
+        ['contact', '骷髅骑士「auth › login」· HP 4', 'BOSS-FIGHT · ELITE'],
+        ['down', '骷髅骑士「auth › login」· 3 回合', 'BOSS-FIGHT · CLEAR'],
       ]
       steps.forEach(([k, sub, detail], i) => {
         $.clock.after(1 + i * 2200, () => {
           void flash($, k, sub, detail)
         })
       })
-      return { text: 'NEON PILOT 演示：驾驶舱面板里依次播放 SYSTEM CHECK → LAUNCH → ALL GREEN → MISSION CLEAR。' }
+      return { text: 'NEON PILOT 演示：驾驶舱面板里依次播放 SYSTEM CHECK → LAUNCH → ALL GREEN → MISSION CLEAR → ENEMY CONTACT → TARGET DOWN。' }
     }
     await update($, isOnAtom, () => true)
     await $.store.set(STORE_ON, true)
@@ -306,6 +342,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const hud = await read($, hudAtom)
     const fl = await read($, flashAtom)
+    const combat = await readCombat($)
     const stage = stageOf(hud)
     if (e.surface === 'desktop' || e.surface === 'mobile') {
       const els = $.ui.resolve(e)
@@ -314,8 +351,8 @@ export const register: Register = on => {
         const H = dashHeight(e.props.bodyColumns, e.props.scroll.bodyRows)
         return (
           <Svg
-            source={cockpitSvg(hud, fl, IMG, Date.now(), H)}
-            alt={`NEON PILOT 驾驶舱：${stage} · ${STAGE_ZH[stage]}，LINK ${hud.pct}%，${hud.turns} turns，${hud.tools} tool calls`}
+            source={cockpitSvg(hud, fl, IMG, Date.now(), H, combat)}
+            alt={`NEON PILOT 驾驶舱：${stage} · ${STAGE_ZH[stage]}，LINK ${hud.pct}%，${hud.turns} turns，${hud.tools} tool calls${isEngaged(combat) ? `，交战中：${combat.kind} HP ${combat.hp}/${combat.maxHp}` : ''}`}
           />
         )
       }
@@ -327,6 +364,11 @@ export const register: Register = on => {
         {fl && (
           <Text color={FLASH[fl.kind].fg} bold>
             ▌{FLASH[fl.kind].title} · {FLASH[fl.kind].zh} — {fl.sub}
+          </Text>
+        )}
+        {!fl && isEngaged(combat) && (
+          <Text color={C.magenta} bold>
+            ▌ENEMY LOCK · 交战中 — {combat.kind}「{clip(combat.name, 20)}」HP {combat.hp}/{combat.maxHp}
           </Text>
         )}
         <Text color={sc} bold>
@@ -426,6 +468,7 @@ export const register: Register = on => {
     }
 
     if (isPush || /\bgit\s+(checkout|switch|branch)\b/.test(cmd)) void refresh($, true)
+    if (isTest) $.clock.after(300, () => void watchCombat($))
     return ran
   })
 }

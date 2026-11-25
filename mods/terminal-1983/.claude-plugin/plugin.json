@@ -1,0 +1,7 @@
+{
+  "name": "terminal-1983",
+  "version": "0.1.0",
+  "description": "A phosphor CRT look: green or amber monochrome, a scanline backdrop, square mono message boxes, a low hum, and a mainframe job log in the side panel.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

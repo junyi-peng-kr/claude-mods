@@ -1,6 +1,6 @@
 {
   "name": "boss-fight",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turns failing tests into a pixel boss whose HP is the failure count. Each test run is a round, and the last passing run defeats it.",
   "license": "MIT",
   "types": "./types/index.d.ts"

@@ -11,6 +11,16 @@ Turns failing tests into a boss fight in Claude Code's side panel.
 
 Test runs are recognised for npm/pnpm/yarn/bun test, jest, vitest, mocha, playwright, pytest, go test, cargo test/nextest, rspec, phpunit, deno, swift, mvn and gradle. A run that errors without printing any counts, such as a build that didn't compile, counts as one failure.
 
+## Mecha mode, with NEON PILOT
+
+When the `neon-pilot` look is on, the fight becomes KX-07's:
+
+- The panel draws KX-07 aiming its arm cannon at the boss, which is recoloured magenta, inside a lock-on reticle. On a hit a beam fires, and on the last hit the boss is crossed out with **DOWN · 击坠**.
+- Toasts read **ENEMY CONTACT · 敌机接近** and **TARGET DOWN · 击坠**.
+- NEON PILOT's cockpit (version 0.3.0 or later) flashes the same two alerts, and shows an **ENGAGED · 交战中** lock-on card with the enemy's HP while the fight runs.
+
+Turn the look off (`/neon off`) and the fight goes back to its own pixel-art style.
+
 ## Commands
 
 - `/boss` opens the panel.

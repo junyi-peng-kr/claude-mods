@@ -33,11 +33,32 @@ export type Win = { name: string; kind: string; maxHp: number; rounds: number; m
 
 export type Records = { wins: number; flees: number; damage: number; fastestMs: number; recent: Win[] }
 
+/**
+ * The fight as other mods read it (neon-pilot's cockpit does): plain data,
+ * `seq` bumped on every change, `event` naming what the change was.
+ */
+export type Combat = {
+  status: Battle['status']
+  event: LogKind | 'none'
+  seq: number
+  kind: string
+  name: string
+  tier: Tier
+  hp: number
+  maxHp: number
+  rounds: number
+}
+
 declare module 'claude-code' {
   interface PluginState {
     'boss-fight': {
       battle: Shaped<Battle>
       records: Shaped<Records>
+      combat: Combat
+    }
+    /** Read only: whether NEON PILOT's look is on, which switches the fight to mecha mode. */
+    'neon-pilot': {
+      isOn: boolean
     }
   }
 }

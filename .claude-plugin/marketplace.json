@@ -8,7 +8,7 @@
     {
       "name": "neon-pilot",
       "source": "./mods/neon-pilot",
-      "description": "Mecha-cockpit look: a vector hangar with KX-07, HUD message plates, and a cockpit dashboard with mission alerts and a pre-push system check."
+      "description": "Mecha-cockpit look: a vector hangar with KX-07, HUD message plates, and a cockpit dashboard with mission alerts, a pre-push system check, and boss-fight combat alerts."
     },
     {
       "name": "code-pet",
@@ -18,7 +18,7 @@
     {
       "name": "boss-fight",
       "source": "./mods/boss-fight",
-      "description": "Failing tests become a pixel boss whose HP is the failure count. Each test run is a round, and a green run defeats it."
+      "description": "Failing tests become a pixel boss whose HP is the failure count; each test run is a round and a green run defeats it. With neon-pilot on, KX-07 fights it."
     },
     {
       "name": "safe-harbor",
@@ -29,6 +29,21 @@
       "name": "flight-recorder",
       "source": "./mods/flight-recorder",
       "description": "A session black box: a waterfall of every turn's tool calls, the slowest and failed calls, and a Markdown export."
+    },
+    {
+      "name": "diff-radar",
+      "source": "./mods/diff-radar",
+      "description": "A radar scope of the working tree: changed files as blips by folder, recency, size and edit count, with a warning when one file keeps getting rewritten."
+    },
+    {
+      "name": "terminal-1983",
+      "source": "./mods/terminal-1983",
+      "description": "A phosphor CRT look in green or amber: a scanline tube backdrop, square mono messages, a low hum, and a mainframe job log of tool calls."
+    },
+    {
+      "name": "branch-warden",
+      "source": "./mods/branch-warden",
+      "description": "Keeps Claude off main: asks or blocks before the first edit and every commit on a protected branch, suggests a branch, and shows it in the status line."
     }
   ]
 }

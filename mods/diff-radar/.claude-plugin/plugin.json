@@ -1,0 +1,7 @@
+{
+  "name": "diff-radar",
+  "version": "0.1.0",
+  "description": "A radar scope of the working tree: every changed file is a blip, sized by lines changed and heated by how often Claude has edited it. Warns when one file keeps getting rewritten.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

@@ -7,12 +7,13 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { Battle, LogKind, Records, Win } from '../types'
-import { KINDS, TIER_ZH, bossSvg, fmtMs, hpBar, tierOf } from './art'
+import type { Battle, Combat, LogKind, Records, Win } from '../types'
+import { KINDS, TIER_ZH, bossSvg, fmtMs, hpBar, mechaSvg, tierOf } from './art'
 import { TEST_RE, firstFailure, hash, parseRun } from './parse'
 
 const PANE = 'boss-fight'
 const TITLE = 'BOSS FIGHT · 打怪'
+const MECHA_TITLE = 'KX-07 · COMBAT 战斗'
 const STORE_RECORDS = 'boss-fight.records'
 const STORE_BATTLE = 'boss-fight.battle'
 
@@ -22,13 +23,47 @@ const NO_RECORDS: Records = { wins: 0, flees: 0, damage: 0, fastestMs: 0, recent
 const battleAtom = atom({ plugin: 'boss-fight', key: 'battle' } as const, IDLE, { shape: 'battle-1' })
 const recordsAtom = atom({ plugin: 'boss-fight', key: 'records' } as const, NO_RECORDS, { shape: 'records-1' })
 
+const combatRef = { plugin: 'boss-fight', key: 'combat' } as const
+const neonRef = { plugin: 'neon-pilot', key: 'isOn' } as const
+
 const line = (kind: LogKind, text: string) => ({ at: Date.now(), kind, text })
 
+/** NEON PILOT's look is on: the fight is drawn and worded as KX-07's. */
+async function isMecha($: EngineInterface): Promise<boolean> {
+  try {
+    return (await $.state.get(neonRef)).value === true
+  } catch {
+    return false
+  }
+}
+
+const titleOf = async ($: EngineInterface) => ((await isMecha($)) ? MECHA_TITLE : TITLE)
+
+/** Publishes the fight for other mods: plain data with a sequence number. */
+async function publish($: EngineInterface, b: Battle) {
+  const { value: prev } = await $.state.get(combatRef)
+  const last = b.log[b.log.length - 1]
+  const combat: Combat = {
+    status: b.status,
+    event: last?.kind ?? 'none',
+    seq: (prev?.seq ?? 0) + 1,
+    kind: b.boss?.kind ?? '',
+    name: b.boss?.name ?? '',
+    tier: b.boss?.tier ?? 'minion',
+    hp: b.boss?.hp ?? 0,
+    maxHp: b.boss?.maxHp ?? 0,
+    rounds: b.rounds,
+  }
+  await $.state.set(combatRef, combat)
+}
+
 async function setBattle($: EngineInterface, fn: (b: Battle) => Battle) {
-  const next = fn(await read($, battleAtom))
+  const before = await read($, battleAtom)
+  const next = fn(before)
   await update($, battleAtom, () => next)
   // A fight in progress survives a restart of the session.
   await $.store.set(STORE_BATTLE, next.status === 'fighting' ? next : null)
+  if (next.log.length !== before.log.length || next.status !== before.status) await publish($, next)
   return next
 }
 
@@ -59,8 +94,14 @@ async function round($: EngineInterface, failed: number, passed: number, name: s
       hitId: 0,
       log: [line('spawn', `${TIER_ZH[tier]}「${name}」${kind} 出现了！HP ${failed}`)],
     }))
-    $.ui.toast(`⚔️ ${TIER_ZH[tier]}出现：${kind}「${name}」· HP ${failed}`, { timeoutMs: 6000 })
-    void $.ui.open({ id: PANE, title: TITLE })
+    const mecha = await isMecha($)
+    $.ui.toast(
+      mecha
+        ? `⚠ ENEMY CONTACT · 敌机接近：${kind}「${name}」· HP ${failed}`
+        : `⚔️ ${TIER_ZH[tier]}出现：${kind}「${name}」· HP ${failed}`,
+      { timeoutMs: 6000 },
+    )
+    void $.ui.open({ id: PANE, title: mecha ? MECHA_TITLE : TITLE })
     return
   }
 
@@ -86,8 +127,11 @@ async function round($: EngineInterface, failed: number, passed: number, name: s
       fastestMs: isRecord ? ms : r.fastestMs,
       recent: [win, ...r.recent].slice(0, 10),
     }))
+    const tail = `用时 ${fmtMs(ms)} · ${win.rounds} 回合${isRecord ? ' · 新纪录！' : ''}`
     $.ui.toast(
-      `🏆 击败 ${boss.kind}「${boss.name}」！用时 ${fmtMs(ms)} · ${win.rounds} 回合${isRecord ? ' · 新纪录！' : ''}`,
+      (await isMecha($))
+        ? `✦ TARGET DOWN · 击坠 ${boss.kind}「${boss.name}」· ${tail}`
+        : `🏆 击败 ${boss.kind}「${boss.name}」！${tail}`,
       { timeoutMs: 8000 },
     )
     return
@@ -145,7 +189,7 @@ export const register: Register = on => {
     const saved = (await $.store.get(STORE_BATTLE)) as Battle | null | undefined
     if (saved && saved.status === 'fighting' && saved.boss) {
       await update($, battleAtom, () => ({ ...saved, hitId: 0 }))
-      void $.ui.open({ id: PANE, title: TITLE })
+      void $.ui.open({ id: PANE, title: await titleOf($) })
       $.ui.toast(`⚔️ ${saved.boss.kind}「${saved.boss.name}」还在等你 · HP ${saved.boss.hp}`)
     }
     return next(e)
@@ -169,14 +213,14 @@ export const register: Register = on => {
       }
     }
     if (verb === 'demo') {
-      await $.ui.open({ id: PANE, title: TITLE })
+      await $.ui.open({ id: PANE, title: await titleOf($) })
       const runs = [5, 3, 4, 1, 0]
       runs.forEach((failed, i) =>
         $.clock.after(1 + i * 2200, () => void round($, failed, 12 - failed, 'demo › login flow')),
       )
       return { text: '演示：HP 5 的 Boss 出现 → 伤害 2 → 回血 1 → 伤害 3 → 击败。' }
     }
-    await $.ui.open({ id: PANE, title: TITLE })
+    await $.ui.open({ id: PANE, title: await titleOf($) })
     return { text: 'BOSS FIGHT 面板已打开。' }
   })
 
@@ -196,6 +240,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const b = await read($, battleAtom)
     const r = await read($, recordsAtom)
+    const mecha = await isMecha($)
     const els = $.ui.resolve(e)
     const { Box, Text, Button } = els
     const boss = b.boss
@@ -208,10 +253,21 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column" gap={1}>
         {e.surface !== 'terminal' && 'Svg' in els ? (
-          <els.Svg source={bossSvg(b, e.props.bodyColumns * 8, now)} alt={alt} isInteractive />
+          <els.Svg
+            source={mecha ? mechaSvg(b, e.props.bodyColumns * 8, now) : bossSvg(b, e.props.bodyColumns * 8, now)}
+            alt={mecha ? `KX-07 战斗画面：${alt}` : alt}
+            isInteractive
+          />
         ) : boss ? (
-          <Text bold color={b.status === 'won' ? '#FFD84A' : '#E84A5F'}>
-            {b.status === 'won' ? '🏆 VICTORY' : '👾'} HP {hpBar(boss)} {boss.hp}/{boss.maxHp}
+          <Text bold color={mecha ? (b.status === 'won' ? '#2EF2FF' : '#FF2E88') : b.status === 'won' ? '#FFD84A' : '#E84A5F'}>
+            {mecha
+              ? b.status === 'won'
+                ? '✦ TARGET DOWN'
+                : '⚠ ENEMY CONTACT'
+              : b.status === 'won'
+                ? '🏆 VICTORY'
+                : '👾'}{' '}
+            HP {hpBar(boss)} {boss.hp}/{boss.maxHp}
           </Text>
         ) : (
           <Text color="#7BD389">✓ 一片和平 · 没有 Boss</Text>

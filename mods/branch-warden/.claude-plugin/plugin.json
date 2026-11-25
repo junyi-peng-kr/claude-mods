@@ -1,0 +1,7 @@
+{
+  "name": "branch-warden",
+  "version": "0.1.0",
+  "description": "Keeps Claude off main: on a protected branch it asks (or blocks) before the first file edit and before every git commit, suggests a branch to switch to, and shows the branch in the status line.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

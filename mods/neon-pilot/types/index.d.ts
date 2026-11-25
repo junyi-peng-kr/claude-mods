@@ -24,9 +24,22 @@ export type Hud = {
   usd?: number
 }
 
-export type FlashKind = 'green' | 'launch' | 'clear' | 'check'
+export type FlashKind = 'green' | 'launch' | 'clear' | 'check' | 'contact' | 'down'
 
 export type Flash = { kind: FlashKind; sub: string; detail: string; id: number }
+
+/** The fight boss-fight publishes, read when that mod is installed. */
+export type Combat = {
+  status: 'idle' | 'fighting' | 'won' | 'fled'
+  event: string
+  seq: number
+  kind: string
+  name: string
+  tier: string
+  hp: number
+  maxHp: number
+  rounds: number
+}
 
 declare module 'claude-code' {
   interface PluginState {
@@ -34,6 +47,10 @@ declare module 'claude-code' {
       hud: Shaped<Hud>
       flash: Shaped<Flash | null>
       isOn: boolean
+    }
+    /** Read only: boss-fight's own value. */
+    'boss-fight': {
+      combat: Combat
     }
   }
 }

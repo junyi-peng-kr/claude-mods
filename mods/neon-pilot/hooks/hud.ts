@@ -1,6 +1,6 @@
 // Pure drawing helpers for NEON PILOT: palette, stage logic and the cockpit
 // dashboard, drawn as one SVG that fills the side panel. No `$` here.
-import type { Flash, FlashKind, Hud, Stage } from '../types'
+import type { Combat, Flash, FlashKind, Hud, Stage } from '../types'
 
 export const C = {
   bg: '#07060D',
@@ -42,7 +42,12 @@ export const FLASH: Record<FlashKind, { code: string; title: string; zh: string;
   launch: { code: '// SORTIE', title: 'LAUNCH', zh: '出击', fg: C.magenta, fill: 10 },
   clear: { code: '// MISSION', title: 'MISSION CLEAR', zh: '任务完成', fg: C.cyan, fill: 10 },
   check: { code: '// PRE-LAUNCH', title: 'SYSTEM CHECK', zh: '出击前自检', fg: C.yellow, fill: 6 },
+  contact: { code: '// RADAR', title: 'ENEMY CONTACT', zh: '敌机接近', fg: C.magenta, fill: 8 },
+  down: { code: '// COMBAT', title: 'TARGET DOWN', zh: '击坠', fg: C.cyan, fill: 10 },
 }
+
+/** A fight boss-fight is running, for the lock-on card. */
+export const isEngaged = (c: Combat | null | undefined): c is Combat => !!c && c.status === 'fighting' && c.maxHp > 0
 
 export const BAR_CELLS = 20
 
@@ -127,7 +132,14 @@ export function dashHeight(columns: number, rows: number): number {
  * panel's spare height), any mission alert, the stage and LINK bar, telemetry
  * and the usage windows.
  */
-export function cockpitSvg(hud: Hud, flash: Flash | null, img: string, now: number, H0: number): string {
+export function cockpitSvg(
+  hud: Hud,
+  flash: Flash | null,
+  img: string,
+  now: number,
+  H0: number,
+  combat: Combat | null = null,
+): string {
   const stage = stageOf(hud)
   const sc = stageColor(stage)
   const isCrit = stage === 'CRITICAL'
@@ -192,6 +204,20 @@ export function cockpitSvg(hud: Hud, flash: Flash | null, img: string, now: numb
       `<text x="${x + 16}" y="${y + 44}" font-family="${HEAD}" font-size="23" font-weight="700" letter-spacing="1.5" fill="${f.fg}">${esc(f.title)} <tspan font-family="${CJK}" font-size="13" font-weight="500" fill="${C.text}">${esc(f.zh)}</tspan></text>` +
       `<text x="${x + 16}" y="${y + 64}" font-family="${CJK}" font-size="11.5" fill="#D6CCEA">${esc(clip(flash.sub, 30))}</text>` +
       cells(x + 16, y + fh - 14, w - 32, 4, 10, f.fill, f.fg)
+    y += fh + 8 - artH
+  } else if (isEngaged(combat)) {
+    // Lock-on card: boss-fight's enemy, over the foot of the art, while no alert shows.
+    const fh = 92
+    y = y + artH - fh - 8
+    const lit = Math.round((combat.hp / combat.maxHp) * 10)
+    s +=
+      `<polygon points="${plate(x, y, w, fh, 10)}" fill="${C.panel}" stroke="${C.magenta}" stroke-width="1.2" class="pulse"/>` +
+      `<rect x="${x}" y="${y + 10}" width="4" height="${fh - 10}" fill="${C.magenta}"/>` +
+      `<text x="${x + 16}" y="${y + 18}" font-family="${MONO}" font-size="10" letter-spacing="1.5" fill="${C.magenta}">// ENEMY LOCK</text>` +
+      `<text x="${x + w - 12}" y="${y + 18}" text-anchor="end" font-family="${MONO}" font-size="10" fill="${C.dim}">HP ${combat.hp}/${combat.maxHp} · R${combat.rounds}</text>` +
+      `<text x="${x + 16}" y="${y + 44}" font-family="${HEAD}" font-size="23" font-weight="700" letter-spacing="1.5" fill="${C.magenta}">ENGAGED <tspan font-family="${CJK}" font-size="13" font-weight="500" fill="${C.text}">${esc(clip(combat.kind, 8))} · 交战中</tspan></text>` +
+      `<text x="${x + 16}" y="${y + 64}" font-family="${CJK}" font-size="11.5" fill="#D6CCEA">${esc(clip(combat.name, 30))}</text>` +
+      cells(x + 16, y + fh - 14, w - 32, 4, 10, lit, C.magenta)
     y += fh + 8 - artH
   }
   y += artH + 12

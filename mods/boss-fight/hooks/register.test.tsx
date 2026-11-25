@@ -22,6 +22,11 @@ test('failures summon a boss, fewer failures hit it, a green run defeats it', as
     'Tests:       12 passed, 12 total',
   ]
   let i = 0
+  const combats: unknown[] = []
+  on('state.set', ($, e, next) => {
+    if (e.plugin === 'boss-fight' && e.key === 'combat') combats.push(e.value)
+    return next(e)
+  })
   on('command.register', () => ({ value: { command: 'boss' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
@@ -38,6 +43,7 @@ test('failures summon a boss, fewer failures hit it, a green run defeats it', as
   expect((await ui.find({ type: 'Text', text: /HP [█░]/ }))?.text).toContain('4/4')
   expect((await ui.find({ type: 'Text', text: /「auth › rejects expired token」/ }))?.text).toContain('精英')
   await ui.unmount()
+  expect(combats.at(-1)).toMatchObject({ status: 'fighting', event: 'spawn', hp: 4 })
 
   await $.tool.call({ tool: 'Bash', command: 'npm test' })
   ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
@@ -51,6 +57,29 @@ test('failures summon a boss, fewer failures hit it, a green run defeats it', as
     expect((await end.find({ type: 'Text', text: /已击败/ }))?.text).toContain('3 回合')
     await end.unmount()
   }
+  expect(combats.at(-1)).toMatchObject({ status: 'won', event: 'win', hp: 0, seq: 3 })
+})
+
+test('with NEON PILOT on, the fight is worded as KX-07 combat', async ($, on) => {
+  mock.store(on)
+  on('state.get', ($, e, next) =>
+    e.plugin === 'neon-pilot' && e.key === 'isOn' ? { value: { value: true, version: 1 } } : next(e),
+  )
+  const toasts: string[] = []
+  on('command.register', () => ({ value: { command: 'boss' } }))
+  on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('ui.toast', (_, e) => {
+    toasts.push(e.text)
+    return { value: undefined }
+  })
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('tool.call', () => ({ result: {}, text: '2 failed, 3 passed', isError: true }))
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  await $.tool.call({ tool: 'Bash', command: 'pytest' })
+  expect(toasts.join('|')).toContain('ENEMY CONTACT')
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect((await ui.find({ type: 'Text', text: /HP [█░]/ }))?.text).toContain('⚠ ENEMY CONTACT')
+  await ui.unmount()
 })
 
 test('a passing run with no boss summons nothing', async ($, on) => {
