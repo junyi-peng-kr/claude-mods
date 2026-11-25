@@ -1,0 +1,12 @@
+{
+  "name": "claude-mods",
+  "owner": { "name": "junyi-peng-kr" },
+  "description": "Mods for Claude Code: looks, dashboards and small helpers.",
+  "plugins": [
+    {
+      "name": "neon-pilot",
+      "source": "./mods/neon-pilot",
+      "description": "Mecha-cockpit look: a vector hangar with KX-07, HUD message plates, and a cockpit dashboard with mission alerts and a pre-push system check."
+    }
+  ]
+}
