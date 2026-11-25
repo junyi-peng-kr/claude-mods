@@ -96,7 +96,8 @@ export const register: Register = on => {
   })
 
   on('prompt.submit', async ($, e, next) => {
-    if (!e.isMeta && !e.command) pendingPrompt = e.text
+    const isPerson = e.origin.kind === 'composer' || e.origin.kind === 'bridge' || e.origin.kind === 'sdk'
+    if (isPerson && !e.isMeta && !e.command) pendingPrompt = e.text
     return next(e)
   }).catch(($, e, next) => next(e))
 

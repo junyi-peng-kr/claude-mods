@@ -35,4 +35,4 @@ The labels use Rajdhani, Share Tech Mono and Noto Sans SC when they're installed
 - `/neon panel` reopens the dashboard after you close it.
 - `/neon demo` plays the six alerts in a row.
 
-Only one look shows at a time. If another mod has set a look, turn that one off first.
+Only one look shows at a time. When you turn this one on, its reply names any other look mod from this collection that is still on (`terminal-1983`, `ink-paper`, `seasons`) and the command that turns it off.

@@ -25,7 +25,7 @@ test('double hours', () => {
 })
 
 test('the look is set with its scene, a passing test stamps 「准」, and /ink off clears it', async ($, on) => {
-  mock.store(on)
+  mock.store(on, { 'ink-paper.isOn': true })
   const scenes: string[] = []
   const toasts: string[] = []
   let cleared = 0

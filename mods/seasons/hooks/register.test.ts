@@ -19,7 +19,7 @@ test('seasons and time of day by date', () => {
 })
 
 test('the look follows now, a preview holds, and auto lets go', async ($, on) => {
-  mock.store(on)
+  mock.store(on, { 'seasons.isOn': true })
   const scenes: string[] = []
   on('command.register', () => ({ value: { command: 'seasons' } }))
   on('theme.set', (_, e) => {

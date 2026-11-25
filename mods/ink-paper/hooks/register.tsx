@@ -9,9 +9,10 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import { SCENE, SCENE_ID, colorsOf, lookOf, lookWithoutStyle, statusOf } from './paper'
+import { otherLooksOn } from './looks'
 
 const STORE_ON = 'ink-paper.isOn'
-const isOnAtom = atom({ plugin: 'ink-paper', key: 'isOn' } as const, true)
+const isOnAtom = atom({ plugin: 'ink-paper', key: 'isOn' } as const, false)
 
 const TEST_RE =
   /(^|[\s;&|(])((npm|pnpm|yarn|bun)\s+(run\s+)?test\b|npx\s+(jest|vitest|mocha|playwright)\b|(jest|vitest|pytest|mocha|rspec|phpunit)\b|go\s+test\b|cargo\s+(test|nextest)\b|python3?\s+-m\s+(pytest|unittest)\b|make\s+test\b|deno\s+test\b|swift\s+test\b|mvn\s+test\b|gradle\w*\s+test\b)/
@@ -37,7 +38,8 @@ async function tickStatus($: EngineInterface) {
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    const isOn = (await $.store.get(STORE_ON)) !== false
+    // Off until you turn it on: only one look shows at a time.
+    const isOn = (await $.store.get(STORE_ON)) === true
     await update($, isOnAtom, () => isOn)
     await $.command.register({
       name: 'ink',
@@ -69,7 +71,7 @@ export const register: Register = on => {
     const result = await applyLook($)
     await tickStatus($)
     return {
-      text: `水墨书斋已铺开（${result}）。浅色是宣纸，深色是灯下的墨。同一时间只有一个外观生效：如果别的外观 mod 开着，先关掉它。`,
+      text: `水墨书斋已铺开（${result}）。浅色是宣纸，深色是灯下的墨。${await otherLooksOn($, 'ink-paper')}`,
     }
   })
 

@@ -132,7 +132,9 @@ export const register: Register = on => {
   }).catch(() => ({ deny: 'standup_log could not read the log.' }))
 
   on('prompt.submit', async ($, e, next) => {
-    if (!e.isMeta && !e.command) {
+    // Only what a person typed: not task notifications, scheduled prompts or other sessions' messages.
+    const isPerson = e.origin.kind === 'composer' || e.origin.kind === 'bridge' || e.origin.kind === 'sdk'
+    if (isPerson && !e.isMeta && !e.command) {
       const first = e.text.split('\n').find(l => l.trim())?.trim() ?? ''
       if (first) await add($, { kind: 'prompt', text: first.slice(0, 120) })
     }
@@ -148,8 +150,9 @@ export const register: Register = on => {
       const i = e as unknown as { file_path?: unknown; notebook_path?: unknown }
       const abs = typeof i.file_path === 'string' ? i.file_path : typeof i.notebook_path === 'string' ? i.notebook_path : ''
       if (abs) {
+        // Files outside the repository aren't this repository's work.
         const { root } = await repoOf($)
-        await add($, { kind: 'edit', path: root && abs.startsWith(`${root}/`) ? abs.slice(root.length + 1) : abs })
+        if (root && abs.startsWith(`${root}/`)) await add($, { kind: 'edit', path: abs.slice(root.length + 1) })
       }
       return ran
     }

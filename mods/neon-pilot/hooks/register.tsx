@@ -16,6 +16,7 @@ import { IMG } from './art'
 import { C, FLASH, STAGE_ZH, barText, clip, cockpitSvg, dashHeight, isEngaged, stageColor, stageOf } from './hud'
 import { makeColors } from './make-colors.js'
 import { SCENE } from './scene'
+import { otherLooksOn } from './looks'
 
 const EMPTY: Hud = {
   model: '—', repo: '—', branch: '—', pct: 0, isLong: false, isWorking: false,
@@ -328,7 +329,7 @@ export const register: Register = on => {
     await $.ui.open({ id: PANE, title: PANE_TITLE })
     await refresh($, true)
     return {
-      text: `NEON PILOT 已开启（${result}）。同一时间只有一个主题生效：如果 SQM look 也开着，先 /sqm off。/neon demo 预览提示。`,
+      text: `NEON PILOT 已开启（${result}）。/neon demo 预览提示。${await otherLooksOn($, 'neon-pilot')}`,
     }
   })
 

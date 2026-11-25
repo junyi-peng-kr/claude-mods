@@ -34,7 +34,7 @@ export function barText(pct: number, cells = 20): string {
 const PAL: Record<Health, { sky0: string; sky1: string; soil: string; grass: string; leaf: string; dark: string; petal: string; bark: string; cap: string; sun: string }> = {
   lush: { sky0: '#BFE8FF', sky1: '#EAF8FF', soil: '#6B4A2B', grass: '#4CAF50', leaf: '#3E9B47', dark: '#2E7D32', petal: '#FF7EB6', bark: '#7A5230', cap: '#E5484D', sun: '#FFD54A' },
   dry: { sky0: '#F4E3B5', sky1: '#FBF3DC', soil: '#7A5A34', grass: '#A3A84A', leaf: '#8E9440', dark: '#6F7531', petal: '#F2B14A', bark: '#7A5A3A', cap: '#C9763D', sun: '#FFB13D' },
-  wilted: { sky0: '#B9B2A6', sky1: '#D9D3C8', soil: '#5A4532', grass: '#8C6E45', leaf: '#7D6140', dark: '#5E4730', petal: '#8E5A4E', bark: '#5E4632', cap: '#8B5A44', sun: '#E8D9B8' },
+  wilted: { sky0: '#B9B2A6', sky1: '#D9D3C8', soil: '#5A4532', grass: '#8C6E45', leaf: '#7D6140', dark: '#5E4730', petal: '#6E5B49', bark: '#5E4632', cap: '#8B5A44', sun: '#E8D9B8' },
 }
 
 /** One plant at its base point (x, y), drooping as health falls. */

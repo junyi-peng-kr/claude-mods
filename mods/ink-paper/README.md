@@ -12,9 +12,9 @@ A look for Claude Code in the spirit of a scholar's study: rice paper by day, in
 
 ## Commands
 
-- `/ink` or `/ink on` turns the look on. It's on by default.
+- `/ink` or `/ink on` turns the look on. It starts off after you install it, and stays the way you leave it across sessions.
 - `/ink off` turns it off. The choice is kept across sessions.
 
-Only one look shows at a time. If another look mod is on, such as `neon-pilot` or `terminal-1983`, turn that one off first.
+Only one look shows at a time. When you turn this one on, its reply names any other look mod from this collection that is still on (`neon-pilot`, `terminal-1983`, `ink-paper`, `seasons`) and the command that turns it off.
 
 The terminal draws no look, but shows the status line and the 「准」 toast.

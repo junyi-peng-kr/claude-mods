@@ -11,9 +11,9 @@ A phosphor CRT look for Claude Code, in green (P1) or amber (P3).
 
 ## Commands
 
-- `/crt` or `/crt on` turns the look on. It's on by default.
+- `/crt` or `/crt on` turns the look on. It starts off after you install it, and stays the way you leave it across sessions.
 - `/crt green` / `/crt amber` switches the phosphor. Your choice is kept across sessions.
 - `/crt console` opens the system console.
 - `/crt off` turns the look off.
 
-Only one look shows at a time. If another look mod is on, such as `neon-pilot`, turn that one off first (`/neon off`).
+Only one look shows at a time. When you turn this one on, its reply names any other look mod from this collection that is still on (`neon-pilot`, `terminal-1983`, `ink-paper`, `seasons`) and the command that turns it off.

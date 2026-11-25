@@ -52,5 +52,11 @@ declare module 'claude-code' {
     'boss-fight': {
       combat: Combat
     }
+    /** Read only: another look mod's switch. */
+    'terminal-1983': { isOn: boolean }
+    /** Read only: another look mod's switch. */
+    'ink-paper': { isOn: boolean }
+    /** Read only: another look mod's switch. */
+    'seasons': { isOn: boolean }
   }
 }

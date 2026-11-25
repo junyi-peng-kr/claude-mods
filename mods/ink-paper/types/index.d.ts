@@ -6,5 +6,11 @@ declare module 'claude-code' {
     'ink-paper': {
       isOn: InkSwitch
     }
+    /** Read only: another look mod's switch. */
+    'neon-pilot': { isOn: boolean }
+    /** Read only: another look mod's switch. */
+    'terminal-1983': { isOn: boolean }
+    /** Read only: another look mod's switch. */
+    'seasons': { isOn: boolean }
   }
 }

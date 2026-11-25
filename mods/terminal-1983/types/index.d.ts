@@ -16,5 +16,11 @@ declare module 'claude-code' {
       tint: Tint
       isOn: boolean
     }
+    /** Read only: another look mod's switch. */
+    'neon-pilot': { isOn: boolean }
+    /** Read only: another look mod's switch. */
+    'ink-paper': { isOn: boolean }
+    /** Read only: another look mod's switch. */
+    'seasons': { isOn: boolean }
   }
 }

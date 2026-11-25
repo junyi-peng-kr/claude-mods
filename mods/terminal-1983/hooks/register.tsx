@@ -9,6 +9,7 @@ import type { EngineInterface, Register } from 'claude-code'
 
 import type { Job, Tint } from '../types'
 import { PHOSPHOR, colorsOf, lookOf, sceneId, sceneSvg } from './crt'
+import { otherLooksOn } from './looks'
 
 const PANE = 'crt-console'
 const TITLE = 'SYSTEM CONSOLE · 1983'
@@ -18,7 +19,7 @@ const MAX_JOBS = 300
 
 const jobsAtom = atom({ plugin: 'terminal-1983', key: 'jobs' } as const, [], { shape: 'jobs-1' })
 const tintAtom = atom({ plugin: 'terminal-1983', key: 'tint' } as const, 'green')
-const isOnAtom = atom({ plugin: 'terminal-1983', key: 'isOn' } as const, true)
+const isOnAtom = atom({ plugin: 'terminal-1983', key: 'isOn' } as const, false)
 
 let jobSeq = 0
 const SCENES = new Set([sceneId('green'), sceneId('amber')])
@@ -70,7 +71,8 @@ export function jobLine(j: Job, now: number): string {
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    const isOn = (await $.store.get(STORE_ON)) !== false
+    // Off until you turn it on: only one look shows at a time.
+    const isOn = (await $.store.get(STORE_ON)) === true
     const stored = await $.store.get(STORE_TINT)
     const tint: Tint = stored === 'amber' ? 'amber' : 'green'
     await update($, isOnAtom, () => isOn)
@@ -109,7 +111,7 @@ export const register: Register = on => {
     const result = await applyLook($, tint)
     $.ui.status(result.startsWith('drawn') ? undefined : `▮ TERMINAL 1983: ${result}`)
     return {
-      text: `TERMINAL 1983 · ${tint === 'green' ? 'P1 绿色荧光' : 'P3 琥珀荧光'}（${result}）。同一时间只有一个外观生效：如果别的外观 mod 开着，先关掉它。打开桌面端标题栏的喇叭能听到显像管的嗡声。`,
+      text: `TERMINAL 1983 · ${tint === 'green' ? 'P1 绿色荧光' : 'P3 琥珀荧光'}（${result}）。打开桌面端标题栏的喇叭能听到显像管的嗡声。${await otherLooksOn($, 'terminal-1983')}`,
     }
   })
 

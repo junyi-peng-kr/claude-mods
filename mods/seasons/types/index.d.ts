@@ -11,5 +11,11 @@ declare module 'claude-code' {
       view: Shaped<SeasonView | null>
       isOn: boolean
     }
+    /** Read only: another look mod's switch. */
+    'neon-pilot': { isOn: boolean }
+    /** Read only: another look mod's switch. */
+    'terminal-1983': { isOn: boolean }
+    /** Read only: another look mod's switch. */
+    'ink-paper': { isOn: boolean }
   }
 }

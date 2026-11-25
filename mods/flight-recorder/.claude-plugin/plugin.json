@@ -1,6 +1,6 @@
 {
   "name": "flight-recorder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A session black box: a side-panel waterfall of every turn's tool calls, colored by kind, with the slowest and failed calls, and /recorder export to Markdown.",
   "license": "MIT",
   "types": "./types/index.d.ts"

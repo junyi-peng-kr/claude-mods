@@ -47,7 +47,9 @@ test('commits, tests and prompts are logged and served by /scribe and the tool',
 
   await $.session.start({ cwd: '/work/api', surface: 'terminal', isInteractive: true })
   await $.prompt.submit({ text: 'token 刷新有 bug\n细节如下……', wait: false, origin: RUN.origin })
+  await $.prompt.submit({ text: '<task-notification> done', wait: false, origin: { kind: 'task-notification' } })
   await $.tool.call({ tool: 'Edit', file_path: '/work/api/src/token.ts', old_string: 'a', new_string: 'b' })
+  await $.tool.call({ tool: 'Edit', file_path: '/tmp/scratch/notes.md', old_string: 'a', new_string: 'b' })
   await $.tool.call({ tool: 'Bash', command: 'npm test' })
   await $.tool.call({ tool: 'Bash', command: 'git commit -am "Fix token refresh"' })
   await $.tool.call({ tool: 'Bash', command: 'gh pr create --fill' })
@@ -61,6 +63,7 @@ test('commits, tests and prompts are logged and served by /scribe and the tool',
   const served = await $.tool.call({ tool: 'mcp__standup-scribe__standup_log' })
   const data = JSON.parse(String(served.result)) as { days: Log }
   const today = Object.values(data.days)[0]?.api
-  expect(today?.prompts[0]?.text).toBe('token 刷新有 bug')
-  expect(today?.edits[0]?.path).toBe('src/token.ts')
+  // Only what a person typed, and only files inside the repository.
+  expect(today?.prompts.map(p => p.text)).toEqual(['token 刷新有 bug'])
+  expect(today?.edits.map(x => x.path)).toEqual(['src/token.ts'])
 })

@@ -9,13 +9,14 @@ import type { EngineInterface, Register } from 'claude-code'
 
 import type { Season, SeasonView, TimeOfDay } from '../types'
 import { SEASON_ZH, TIME_ZH, colorsOf, lookOf, parseSceneId, sceneSvg, seasonOf, timeOf } from './four'
+import { otherLooksOn } from './looks'
 
 const STORE_ON = 'seasons.isOn'
 const HOUR_MS = 60 * 60 * 1000
 const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter']
 
 const viewAtom = atom({ plugin: 'seasons', key: 'view' } as const, null, { shape: 'view-1' })
-const isOnAtom = atom({ plugin: 'seasons', key: 'isOn' } as const, true)
+const isOnAtom = atom({ plugin: 'seasons', key: 'isOn' } as const, false)
 
 const nameOf = (v: SeasonView) => `${SEASON_ZH[v.season]} · ${TIME_ZH[v.time]}`
 
@@ -40,7 +41,8 @@ async function follow($: EngineInterface, isForced: boolean): Promise<string | u
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    const isOn = (await $.store.get(STORE_ON)) !== false
+    // Off until you turn it on: only one look shows at a time.
+    const isOn = (await $.store.get(STORE_ON)) === true
     await update($, isOnAtom, () => isOn)
     await $.command.register({
       name: 'seasons',
@@ -74,12 +76,12 @@ export const register: Register = on => {
       }
       const view: SeasonView = { season: a as Season, time: (b as TimeOfDay | undefined) ?? 'day', isPreview: true }
       const result = await show($, view)
-      return { text: `预览：${nameOf(view)}（${result}）。/seasons auto 回到跟随真实季节和时间。` }
+      return { text: `预览：${nameOf(view)}（${result}）。/seasons auto 回到跟随真实季节和时间。${await otherLooksOn($, 'seasons')}` }
     }
     const result = await follow($, true)
     const view = await read($, viewAtom)
     return {
-      text: `四时：${view ? nameOf(view) : '—'}（${result ?? 'drawn'}），每小时跟随真实季节与昼夜变化。同一时间只有一个外观生效：如果别的外观 mod 开着，先关掉它。`,
+      text: `四时：${view ? nameOf(view) : '—'}（${result ?? 'drawn'}），每小时跟随真实季节与昼夜变化。${await otherLooksOn($, 'seasons')}`,
     }
   })
 

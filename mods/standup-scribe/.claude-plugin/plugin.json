@@ -1,6 +1,6 @@
 {
   "name": "standup-scribe",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Keeps a daily log of commits, PRs, edited files, test runs and prompts per repository, and turns it into a yesterday / today / blockers standup with /scribe or the standup_log tool.",
   "license": "MIT"
 }

@@ -1,6 +1,6 @@
 {
   "name": "token-garden",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A garden for the context window: each turn grows a plant by what it did, and the garden dries and wilts as the context fills, with a nudge to /compact before it's full.",
   "license": "MIT",
   "types": "./types/index.d.ts"

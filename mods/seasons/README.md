@@ -19,9 +19,9 @@ Day runs from 06:00 to 18:00. The seasons follow the northern-hemisphere months.
 
 ## Commands
 
-- `/seasons` or `/seasons on` turns the look on and follows the real date. It's on by default.
+- `/seasons` or `/seasons on` turns the look on and follows the real date. It starts off after you install it, and stays the way you leave it across sessions.
 - `/seasons preview <spring|summer|autumn|winter> [day|night]` shows a season now, holding it until you run `/seasons auto`. For example: `/seasons preview winter night`.
 - `/seasons auto` goes back to following the real season and time.
 - `/seasons off` turns the look off. The choice is kept across sessions.
 
-Only one look shows at a time. If another look mod is on, such as `neon-pilot`, `terminal-1983` or `ink-paper`, turn that one off first.
+Only one look shows at a time. When you turn this one on, its reply names any other look mod from this collection that is still on (`neon-pilot`, `terminal-1983`, `ink-paper`, `seasons`) and the command that turns it off.
