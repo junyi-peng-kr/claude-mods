@@ -5,6 +5,10 @@ A library of mods for [Claude Code](https://code.claude.com/docs/en/plugins/mods
 | Mod | What it does |
 | --- | --- |
 | [`neon-pilot`](mods/neon-pilot) | A mecha-cockpit look: a night-hangar background with the mecha KX-07, HUD-plate messages, and a cockpit dashboard in the side panel with mission alerts and a pre-push system check. |
+| [`code-pet`](mods/code-pet) | A pixel pet in the side panel. Passing tests feed it, commits cheer it up, failures upset it, and it grows from egg to adult as you code. The same pet is kept across sessions. |
+| [`boss-fight`](mods/boss-fight) | Failing tests become a pixel boss whose HP is the number of failures. Each test run is a round, a green run defeats it, and your fastest kills are recorded. |
+| [`safe-harbor`](mods/safe-harbor) | Guards dangerous tool calls in three levels. It blocks `rm -rf /` and force-pushes to main, asks before `reset --hard`, `DROP TABLE`, `curl \| sh` and `.env` writes, and warns about `sudo`. Edit the rules with `/harbor`. |
+| [`flight-recorder`](mods/flight-recorder) | A black box for the session: a waterfall of every turn's tool calls by kind, the slowest and failed calls, and `/recorder export` to Markdown. |
 
 ## Install a mod
 

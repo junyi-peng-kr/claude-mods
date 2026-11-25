@@ -1,0 +1,7 @@
+{
+  "name": "code-pet",
+  "version": "0.1.0",
+  "description": "A pixel pet in the side panel that eats passing tests, cheers commits, sulks at failures and evolves as you code. It is kept across sessions.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

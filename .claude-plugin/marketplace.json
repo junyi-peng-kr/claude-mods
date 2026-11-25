@@ -1,12 +1,34 @@
 {
   "name": "claude-mods",
-  "owner": { "name": "junyi-peng-kr" },
+  "owner": {
+    "name": "junyi-peng-kr"
+  },
   "description": "Mods for Claude Code: looks, dashboards and small helpers.",
   "plugins": [
     {
       "name": "neon-pilot",
       "source": "./mods/neon-pilot",
       "description": "Mecha-cockpit look: a vector hangar with KX-07, HUD message plates, and a cockpit dashboard with mission alerts and a pre-push system check."
+    },
+    {
+      "name": "code-pet",
+      "source": "./mods/code-pet",
+      "description": "A pixel pet in the side panel that eats passing tests, cheers commits, sulks at failures and evolves from egg to adult as you code."
+    },
+    {
+      "name": "boss-fight",
+      "source": "./mods/boss-fight",
+      "description": "Failing tests become a pixel boss whose HP is the failure count. Each test run is a round, and a green run defeats it."
+    },
+    {
+      "name": "safe-harbor",
+      "source": "./mods/safe-harbor",
+      "description": "Guards dangerous tool calls in three levels (block, ask, warn), from rm -rf / and force-push to main to curl | sh and .env writes, with editable rules."
+    },
+    {
+      "name": "flight-recorder",
+      "source": "./mods/flight-recorder",
+      "description": "A session black box: a waterfall of every turn's tool calls, the slowest and failed calls, and a Markdown export."
     }
   ]
 }

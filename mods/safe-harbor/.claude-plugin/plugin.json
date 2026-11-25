@@ -1,0 +1,7 @@
+{
+  "name": "safe-harbor",
+  "version": "0.1.0",
+  "description": "Guards dangerous tool calls in three levels: block (rm -rf /, force-push to main, secrets), ask (force-push, reset --hard, DROP TABLE, curl | sh, .env writes) and warn (sudo, chmod 777, --no-verify). Rules are editable with /harbor.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}
