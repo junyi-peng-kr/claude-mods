@@ -41,3 +41,7 @@ Then start a new session.
 ## Adding a mod
 
 Put the mod in `mods/<name>/` with its own `.claude-plugin/plugin.json`, add an entry to `.claude-plugin/marketplace.json`, and run `claude plugin validate mods/<name>`. Bump the mod's `version` whenever you change it, or `claude plugin update` won't pick up the change.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

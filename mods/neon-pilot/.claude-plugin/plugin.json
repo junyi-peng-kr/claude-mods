@@ -2,5 +2,6 @@
   "name": "neon-pilot",
   "version": "0.2.0",
   "description": "NEON PILOT mecha-cockpit look: vector hangar with KX-07, HUD message plates, a cockpit dashboard with mission alerts and a pre-push system check.",
+  "license": "MIT",
   "types": "./types/index.d.ts"
 }
